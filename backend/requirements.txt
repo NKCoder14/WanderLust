@@ -1,0 +1,7 @@
+groq
+requests
+beautifulsoup4
+python-dotenv
+google-search-results
+fastapi
+uvicorn
