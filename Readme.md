@@ -1,4 +1,4 @@
-# Event Radar 🎯
+# WanderLust 🎯
 
 A personal automation that scrapes tech events and hackathons across India every Saturday and sends a curated digest to Telegram — filtered by relevance using Groq AI (Llama 3.3).
 
