@@ -3,7 +3,7 @@ from datetime import datetime
 def Format_Digest(events: list[dict]) -> str:
     today = datetime.now().strftime("%d %B %Y")
     lines = []
-    lines.append(f"🎯 <b>Event Radar — Weekly Digest</b>")
+    lines.append(f"🎯 <b>WanderLust - Weekly Digest</b>")
     lines.append(f"📅 {today}\n")
     if not events:
         lines.append("No relevant events found this week. Check back next Saturday!")
