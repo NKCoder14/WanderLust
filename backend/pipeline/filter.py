@@ -103,7 +103,7 @@ async def Process_Batches(events: list[dict]) -> list[dict]:
         f'"why_relevant":"","is_free_or_student":true}}\n'
         f"Empty = []"
     )
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     response = await loop.run_in_executor(
         None,
         lambda: client.chat.completions.create(

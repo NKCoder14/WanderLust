@@ -7,26 +7,17 @@ SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+API_SECRET_KEY = os.getenv("API_SECRET_KEY", "")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 _now = datetime.now()
-_this_month = _now.strftime("%B %Y")                             
-_next_month = (_now + timedelta(days=30)).strftime("%B %Y")     
+_this_month = _now.strftime("%B %Y")
+_next_month = (_now + timedelta(days=30)).strftime("%B %Y")
 _month_after = (_now + timedelta(days=60)).strftime("%B %Y")
 
-import json
+DEFAULT_CITIES = ["Bengaluru", "Belagavi", "Pune", "Hyderabad", "Mumbai"]
 
-# Try to load user overrides from settings.json
-_settings_file = os.path.join(os.path.dirname(__file__), "settings.json")
-_custom_settings = {}
-if os.path.exists(_settings_file):
-    try:
-        with open(_settings_file, "r") as f:
-            _custom_settings = json.load(f)
-    except Exception:
-        pass
-
-CITIES = _custom_settings.get("CITIES", ["Bengaluru", "Belagavi", "Pune", "Hyderabad", "Mumbai"])
-
-SEARCH_QUERIES = _custom_settings.get("SEARCH_QUERIES", [
+DEFAULT_SEARCH_QUERIES = [
     # Cloud platforms
     f"AWS summit India {_this_month}",
     f"Google Cloud Next India {_this_month}",
@@ -49,11 +40,15 @@ SEARCH_QUERIES = _custom_settings.get("SEARCH_QUERIES", [
     # Broader upcoming catches
     f"tech event Bengaluru upcoming {_next_month}",
     f"student developer event India {_month_after}",
-])
+]
 
-USER_PROFILE = _custom_settings.get("USER_PROFILE", {
+DEFAULT_USER_PROFILE = {
     "interests": ["web development", "cloud computing", "AI", "machine learning", "hackathons", "startups"],
-    "cities": CITIES,
+    "cities": DEFAULT_CITIES,
     "type": "student",
     "level": "beginner to intermediate",
-})
+}
+
+CITIES = DEFAULT_CITIES
+SEARCH_QUERIES = DEFAULT_SEARCH_QUERIES
+USER_PROFILE = DEFAULT_USER_PROFILE

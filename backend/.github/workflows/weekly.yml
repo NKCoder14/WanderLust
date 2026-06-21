@@ -1,4 +1,4 @@
-name: Event Radar Weekly
+name: WanderLust Weekly
 
 on:
   schedule:
@@ -7,25 +7,42 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-pipeline:
+  trigger-pipeline:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - name: Trigger pipeline
+        run: |
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "${{ secrets.API_URL }}/api/run" \
+            -H "X-API-Key: ${{ secrets.API_SECRET_KEY }}" \
+            -H "Content-Type: application/json")
+          echo "HTTP status: $HTTP_CODE"
+          if [ "$HTTP_CODE" = "429" ]; then
+            echo "Rate limited — a run was already triggered recently. Exiting gracefully."
+            exit 0
+          elif [ "$HTTP_CODE" != "200" ]; then
+            echo "Failed to trigger pipeline (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+          echo "Pipeline triggered successfully"
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run Event Radar
-        env:
-          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python main.py
+      - name: Wait for completion
+        run: |
+          echo "Polling GET /api/run/status every 10s (timeout: 10 minutes)..."
+          for i in $(seq 1 60); do
+            sleep 10
+            RESPONSE=$(curl -sf "${{ secrets.API_URL }}/api/run/status" || echo '{"status":"unknown"}')
+            STATUS=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.loads(sys.stdin.read()).get('status','unknown'))")
+            echo "Attempt $i/60: status=$STATUS"
+            if [ "$STATUS" = "complete" ]; then
+              echo "✅ Pipeline completed successfully"
+              exit 0
+            elif [ "$STATUS" = "failed" ]; then
+              ERROR=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.loads(sys.stdin.read()).get('error_message','unknown error'))")
+              echo "❌ Pipeline failed: $ERROR"
+              exit 1
+            fi
+          done
+          echo "❌ Timed out waiting for pipeline completion (10 minutes)"
+          exit 1
