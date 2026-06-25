@@ -27,7 +27,7 @@ async def Send_Message_To_Telegram(text: str) -> bool:
                 requests.post(url, json=plain_payload, timeout=10)
             await asyncio.sleep(0.5)
         except Exception as e:
-            print(f"  ⚠️  Telegram send error: {e}")
+            print("  ⚠️  Telegram send error (check logs)")
             return False
     return True
 

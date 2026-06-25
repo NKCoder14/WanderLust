@@ -78,7 +78,7 @@ async def Process_Batch_with_Retry(events: list[dict]) -> tuple[list[dict], bool
                     print(f"  ❌ Rate limit persists after {MAX_RETRIES} attempts.")
                     return [], False
             else:
-                print(f"  ⚠️  Groq error: {e}")
+                print("  ⚠️  Groq error (check logs)")
                 return [], False
     return [], False
 

@@ -9,6 +9,10 @@ from pipeline.formatter import Format_Digest
 from notifier.telegram import Send_Message_To_Telegram
 from db import Get_sync_session
 from models import Run, Event
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def Scrape_Sources() -> list[dict]:
     print("📡 Scraping sources...")
@@ -26,18 +30,20 @@ def Scrape_Sources() -> list[dict]:
 
 def Wrtie_Events_to_Database(session, run_id: int, filtered_events: list[dict]):
     for evt in filtered_events:
+        link = evt.get("link", "")
+        if link and not (link.startswith("http://") or link.startswith("https://")):
+            link = ""  
         event_row = Event(
             title=evt.get("title", ""),
             date=evt.get("date", ""),
             location=evt.get("location", ""),
-            link=evt.get("link", ""),
+            link=link,
             source=evt.get("source", ""),
             type=evt.get("type", ""),
             relevance_score=evt.get("relevance_score", 0),
             why_relevant=evt.get("why_relevant", ""),
             is_free_or_student=evt.get("is_free_or_student", False),
-            run_id=run_id,
-        )
+            run_id=run_id)
         session.add(event_row)
     session.commit()
 
@@ -81,9 +87,10 @@ def Run_Pipeline(run_id: int):
             Update_Run_Status(session, run_id, "complete", event_count=len(filtered_events))
             print("✅ Pipeline completed successfully!")
         except Exception as e:
-            print(f"❌ Pipeline failed: {e}")
+            logger.error(f"Pipeline failed: {e}", exc_info=True)
+            print(f"❌ Pipeline failed. Check server logs.")
             try:
-                Update_Run_Status(session, run_id, "failed", error_message=str(e))
+                Update_Run_Status(session, run_id, "failed", error_message="Pipeline failed due to internal error. Check server logs.")
             except Exception:
                 pass
             raise

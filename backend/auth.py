@@ -1,11 +1,32 @@
-import os
-from fastapi import Header, HTTPException
+import jwt
+import secrets
+from datetime import datetime, timezone, timedelta
+from fastapi import Request, Header, HTTPException
+from config import JWT_SECRET, CRON_SECRET
 
-API_SECRET = os.getenv("API_SECRET_KEY", "")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 
-async def Requires_API_Key(x_api_key: str = Header(None, alias="X-API-Key")):
-    if not API_SECRET:
-        return
+def Create_Access_Token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=ALGORITHM)
+    return encoded_jwt
 
-    if not x_api_key or x_api_key != API_SECRET:
-        raise HTTPException(status_code=401,detail="Invalid or missing API key")
+async def Require_Authentication(request: Request):
+    token = request.cookies.get("wanderlust_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
+        if payload.get("sub") != "admin":
+            raise HTTPException(status_code=401, detail="Invalid token subject")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+async def Require_Cron_Or_Auth(request: Request, x_cron_secret: str = Header(None, alias="X-Cron-Secret")):
+    if CRON_SECRET and x_cron_secret:
+        if secrets.compare_digest(x_cron_secret, CRON_SECRET):
+            return
+    await Require_Authentication(request)
