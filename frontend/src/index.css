@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-wander-base text-wander-textMuted antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Inter', sans-serif;
+    @apply text-wander-textMain;
+  }
+}
+
+@layer utilities {
+  .bg-aurora {
+    background: linear-gradient(-45deg,
+        #04070D,
+        #080D1A,
+        #0A1224,
+        #050B14,
+        #080D1A);
+    background-size: 300% 300%;
+    animation: aurora 12s ease infinite;
+  }
+}
+
+@keyframes aurora {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
