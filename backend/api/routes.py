@@ -8,7 +8,7 @@ from config import DEFAULT_USER_PROFILE, DEFAULT_CITIES, DEFAULT_SEARCH_QUERIES,
 from db import Get_async_db
 from models import Event, Run, Config
 from auth import Require_Authentication, Require_Cron_Or_Auth, Create_Access_Token
-from ..main import Run_Pipeline
+from main import Run_Pipeline
 import secrets
 from fastapi.responses import JSONResponse
 from pydantic import Field, constr
