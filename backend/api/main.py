@@ -20,7 +20,7 @@ app = FastAPI(
     version="2.0.0",
     lifespan=lifespan,
 )
-allowed_origins = [FRONTEND_URL]
+allowed_origins = [FRONTEND_URL.rstrip("/")]
 if FRONTEND_URL != "http://localhost:5173": allowed_origins.append("http://localhost:5173")
 
 app.add_middleware(
