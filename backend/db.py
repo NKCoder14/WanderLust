@@ -21,7 +21,11 @@ def Make_sync_URL(url: str) -> str:
     return f"postgresql+psycopg2://{base[1]}" if len(base) == 2 else url
 
 async_url = Make_async_URL(raw_url) if raw_url else ""
-async_engine = create_async_engine(async_url, echo=False) if async_url else None
+async_engine = create_async_engine(
+    async_url,
+    echo=False,
+    connect_args={"statement_cache_size": 0, "prepared_statement_cache_size": 0}
+) if async_url else None
 AsyncSessionLocal = async_sessionmaker(
     bind=async_engine, class_=AsyncSession, expire_on_commit=False
 ) if async_engine else None
