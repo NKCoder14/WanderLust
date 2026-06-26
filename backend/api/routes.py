@@ -47,7 +47,8 @@ async def login(req: LoginRequest):
         key="wanderlust_token", 
         value=token, 
         httponly=True, 
-        samesite="lax",
+        samesite="none",
+        secure=True,
         max_age=7 * 24 * 3600
     )
     return response
