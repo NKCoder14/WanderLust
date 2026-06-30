@@ -35,7 +35,7 @@ class Event(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     run = relationship("Run", back_populates="events")
 
-    def To_Dictionary(self):
+    def to_dict(self):
         return {
             "title": self.title,
             "date": self.date,

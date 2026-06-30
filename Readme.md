@@ -10,9 +10,8 @@
 - **AI Relevance Filtering**: Uses **Groq (Llama 3.3 70B)** to score relevance (1-10), deduplicate, and extract structured event data tailored to your personal developer profile.
 - **Modern Dashboard**: A sleek, responsive React (Vite) frontend with Tailwind CSS and a custom glassmorphism design system.
 - **PostgreSQL Database**: Stores historical events, tracks pipeline run statistics, and manages your dynamic configuration.
-- **Secure Authentication**: JWT-based cookie authentication for the admin panel, protecting manual triggers and configuration changes.
 - **Telegram Notifications**: Sends a curated weekly digest to Telegram.
-- **Automated Cron**: Runs automatically every Saturday via GitHub Actions, secured by a dedicated webhook secret.
+- **Automated Cron**: Runs automatically every Saturday via GitHub Actions.
 
 ---
 
@@ -29,7 +28,6 @@
 - **SQLAlchemy & asyncpg** (PostgreSQL)
 - **Groq API** (Llama 3.3 70B)
 - **SerpAPI** & **BeautifulSoup4** (Scraping)
-- **PyJWT** & **Passlib** (Authentication)
 
 ---
 
@@ -51,9 +49,6 @@ GROQ_API_KEY=your_groq_api_key
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 TELEGRAM_CHAT_ID=your_telegram_chat_id
 DATABASE_URL=postgresql://user:password@localhost:5432/wanderlust
-ADMIN_PASSWORD=your_secure_password
-JWT_SECRET=your_random_jwt_secret
-CRON_SECRET=your_github_actions_secret
 FRONTEND_URL=http://localhost:5173
 ENV=development
 ```
@@ -104,7 +99,7 @@ Deploy the `frontend/` directory (e.g., on Vercel, Netlify, or Render Static Sit
 
 ### 4. GitHub Actions (Automated Runs)
 To keep the weekly automated scraping alive:
-1. Add `API_URL` (your deployed backend URL) and `CRON_SECRET` to your GitHub Repository Secrets.
+1. Add `API_URL` (your deployed backend URL) to your GitHub Repository Secrets.
 2. The workflow (`.github/workflows/weekly.yml`) will automatically hit `POST /api/run` every Saturday.
 
 ---
@@ -129,7 +124,6 @@ event-radar/
 │   ├── scrapers/                # Luma, Devfolio, MLH, SerpAPI scrapers
 │   ├── pipeline/                # Groq AI filtering & pipeline logic
 │   ├── notifier/                # Telegram integration
-│   ├── auth.py                  # JWT Auth & Security dependencies
 │   ├── models.py                # SQLAlchemy DB models
 │   ├── config.py                # Initial Default Configurations
 │   └── requirements.txt         
