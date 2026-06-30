@@ -13,9 +13,7 @@ const getHeaders = () => {
 
 async function handleResponse(res) {
   if (!res.ok) {
-    if (res.status === 401 && window.location.pathname !== '/login') {
-      window.location.href = '/login';
-    }
+
     const body = await res.json().catch(() => ({}));
     throw new ApiError(body.detail || res.statusText, res.status);
   }
@@ -41,13 +39,12 @@ export const triggerPipelineRun = async () => {
   const res = await fetch(`${BASE_URL}/api/run`, {
     method: 'POST',
     headers: getHeaders(),
-    credentials: 'include',
   });
   return handleResponse(res);
 };
 
 export const fetchRunStatus = async () => {
-  const res = await fetch(`${BASE_URL}/api/run/status`, { credentials: 'include' });
+  const res = await fetch(`${BASE_URL}/api/run/status`);
   return handleResponse(res);
 };
 
@@ -55,18 +52,7 @@ export const updateConfig = async (payload) => {
   const res = await fetch(`${BASE_URL}/api/config`, {
     method: 'PUT',
     headers: getHeaders(),
-    credentials: 'include',
     body: JSON.stringify(payload),
-  });
-  return handleResponse(res);
-};
-
-export const login = async (password) => {
-  const res = await fetch(`${BASE_URL}/api/auth/login`, {
-    method: 'POST',
-    headers: getHeaders(),
-    credentials: 'include',
-    body: JSON.stringify({ password }),
   });
   return handleResponse(res);
 };

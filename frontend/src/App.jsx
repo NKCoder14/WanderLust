@@ -4,7 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Events from './pages/Events';
 import Stats from './pages/Stats';
 import Config from './pages/Config';
-import Login from './pages/Login';
+
 import { RunProvider } from './RunContext';
 
 function App() {
@@ -19,7 +19,7 @@ function App() {
             <Route path="/events" element={<Events />} />
             <Route path="/stats" element={<Stats />} />
             <Route path="/config" element={<Config />} />
-            <Route path="/login" element={<Login />} />
+
           </Routes>
         </div>
       </RunProvider>

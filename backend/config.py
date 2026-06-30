@@ -8,11 +8,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 DATABASE_URL = os.getenv("DATABASE_URL", "")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
-JWT_SECRET = os.getenv("JWT_SECRET")
-if not JWT_SECRET:
-    raise RuntimeError("JWT_SECRET environment variable is missing. It is required for security.")
-CRON_SECRET = os.getenv("CRON_SECRET", "")
+
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 now = datetime.now()
 this_month = now.strftime("%B %Y")

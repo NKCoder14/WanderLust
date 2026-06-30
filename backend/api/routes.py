@@ -4,13 +4,10 @@ from pydantic import BaseModel
 from typing import List, Optional
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
-from config import DEFAULT_USER_PROFILE, DEFAULT_CITIES, DEFAULT_SEARCH_QUERIES, ADMIN_PASSWORD
+from config import DEFAULT_USER_PROFILE, DEFAULT_CITIES, DEFAULT_SEARCH_QUERIES
 from db import Get_async_db
 from models import Event, Run, Config
-from auth import Require_Authentication, Require_Cron_Or_Auth, Create_Access_Token
 from main import Run_Pipeline
-import secrets
-from fastapi.responses import JSONResponse
 from pydantic import Field, constr
 from typing_extensions import Annotated
 
@@ -18,41 +15,18 @@ router = APIRouter()
 
 RATE_LIMIT_HOURS = 6
 
+SafeString = Annotated[str, constr(max_length=100, pattern=r'^[a-zA-Z0-9\s,.\-!&]+$')]
+
 class UserProfileModel(BaseModel):
     interests: List[str]
     cities: List[str]
     type: str
     level: str
 
-class LoginRequest(BaseModel):
-    password: str
-
-SafeString = Annotated[str, constr(max_length=100, pattern=r'^[a-zA-Z0-9\s,.\-!&]+$')]
-
 class ConfigUpdate(BaseModel):
     USER_PROFILE: Optional[UserProfileModel] = None
     CITIES: Optional[List[SafeString]] = Field(None, max_length=20)
     SEARCH_QUERIES: Optional[List[SafeString]] = Field(None, max_length=20)
-
-@router.post("/auth/login")
-async def login(req: LoginRequest):
-    if not ADMIN_PASSWORD:
-        raise HTTPException(status_code=500, detail="ADMIN_PASSWORD not configured")
-    if not secrets.compare_digest(req.password, ADMIN_PASSWORD):
-        raise HTTPException(status_code=401, detail="Invalid password")
-    
-    token = Create_Access_Token(data={"sub": "admin"})
-    response = JSONResponse(content={"message": "Logged in successfully"})
-    response.set_cookie(
-        key="wanderlust_token", 
-        value=token, 
-        httponly=True, 
-        samesite="none",
-        secure=True,
-        max_age=7 * 24 * 3600
-    )
-    return response
-
 
 @router.get("/events")
 async def Get_Events(db: AsyncSession = Depends(Get_async_db)):
@@ -73,7 +47,7 @@ async def Get_Events(db: AsyncSession = Depends(Get_async_db)):
     events = result.scalars().all()
     return {"events": [e.to_dict() for e in events]}
 
-@router.post("/run", dependencies=[Depends(Require_Cron_Or_Auth)])
+@router.post("/run")
 async def Trigger_Run(background_tasks: BackgroundTasks, db: AsyncSession = Depends(Get_async_db)):
     cutoff = datetime.now(timezone.utc) - timedelta(hours=RATE_LIMIT_HOURS)
     recent = await db.execute(
@@ -95,7 +69,7 @@ async def Trigger_Run(background_tasks: BackgroundTasks, db: AsyncSession = Depe
     background_tasks.add_task(Run_Pipeline, new_run.id)
     return {"status": "started", "run_id": new_run.id}
 
-@router.get("/run/status", dependencies=[Depends(Require_Cron_Or_Auth)])
+@router.get("/run/status")
 async def Get_Run_Status(db: AsyncSession = Depends(Get_async_db)):
     result = await db.execute(
         select(Run).order_by(desc(Run.started_at)).limit(1)
@@ -130,7 +104,7 @@ async def Get_Config(db: AsyncSession = Depends(Get_async_db)):
         "SEARCH_QUERIES": get_config.search_queries or DEFAULT_SEARCH_QUERIES,
     }
 
-@router.put("/config", dependencies=[Depends(Require_Authentication)])
+@router.put("/config")
 async def Update_Config(config_update: ConfigUpdate, db: AsyncSession = Depends(Get_async_db)):
     result = await db.execute(select(Config).where(Config.id == 1))
     config = result.scalar_one_or_none()

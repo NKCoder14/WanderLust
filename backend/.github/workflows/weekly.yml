@@ -15,7 +15,6 @@ jobs:
         run: |
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
             "${{ secrets.API_URL }}/api/run" \
-            -H "X-Cron-Secret: ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json")
           echo "HTTP status: $HTTP_CODE"
           if [ "$HTTP_CODE" = "429" ]; then
@@ -32,7 +31,7 @@ jobs:
           echo "Polling GET /api/run/status every 10s (timeout: 10 minutes)..."
           for i in $(seq 1 60); do
             sleep 10
-            RESPONSE=$(curl -sf -H "X-Cron-Secret: ${{ secrets.CRON_SECRET }}" "${{ secrets.API_URL }}/api/run/status" || echo '{"status":"unknown"}')
+            RESPONSE=$(curl -sf "${{ secrets.API_URL }}/api/run/status" || echo '{"status":"unknown"}')
             STATUS=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.loads(sys.stdin.read()).get('status','unknown'))")
             echo "Attempt $i/60: status=$STATUS"
             if [ "$STATUS" = "complete" ]; then
